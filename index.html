@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sistema de Gestión de Tickets - Inicio de Sesión" />
+    <title>Inicio de Sesión | Sistema de Tickets</title>
+    <link rel="stylesheet" href="front/css/main.css" />
+    <link rel="stylesheet" href="front/css/auth.css" />
+</head>
+<body>
+    <main class="auth-container">
+        <section class="auth-card">
+            <header class="auth-header">
+                <div class="auth-logo" aria-hidden="true">🎟️</div>
+                <h1 class="auth-title">Sistema de Tickets</h1>
+                <p class="auth-subtitle">Accede con tus credenciales</p>
+            </header>
+
+            <div id="message" class="auth-message" role="alert"></div>
+
+            <form id="loginForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="email" class="form-label">Correo Electrónico</label>
+                    <div class="input-group">
+                        <span class="input-icon" aria-hidden="true">✉️</span>
+                        <input type="email" id="email" class="form-control" placeholder="ejemplo@correo.com" required autocomplete="email" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-icon" aria-hidden="true">🔑</span>
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" minlength="6" />
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+            <footer class="auth-footer">
+                <p>¿No tienes cuenta? <a href="front/register.html">Regístrate aquí</a></p>
+            </footer>
+        </section>
+    </main>
+
+    <script src="front/js/config.js"></script>
+    <script src="front/js/auth.js"></script>
+    <script src="front/js/api.js"></script>
+    <script src="front/js/login.js"></script>
+</body>
+</html>
