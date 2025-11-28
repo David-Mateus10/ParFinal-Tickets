@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel del Gestor - Microservicio de Tickets">
+    <title>Panel de Gestión de Tickets</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/gestor.css">
+</head>
+<body>
+    <header class="panel-encabezado">
+        <div class="contenedor">
+            <div class="encabezado-flex">
+                <div class="encabezado-izquierda">
+                    <div class="icono-logo">🎟️</div>
+                    <h1 class="titulo-app">Gestión de Tickets</h1>
+                </div>
+                <div class="encabezado-derecha">
+                    <div class="usuario-datos">
+                        <span class="icono-usuario">👤</span>
+                        <span id="nombreUsuario" class="nombre-usuario">Gestor</span>
+                        <span class="etiqueta-rol">Gestor</span>
+                    </div>
+                    <button id="btnSalir" class="boton-secundario">
+                        Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="panel-principal">
+        <div class="contenedor">
+            <div class="panel-layout">
+                <aside class="panel-menu">
+                    <nav class="menu-navegacion">
+                        <button class="opcion-menu activa" data-seccion="nuevo">
+                            ➕ Nuevo Ticket
+                        </button>
+                        <button class="opcion-menu" data-seccion="listado">
+                            📋 Ver Mis Tickets
+                        </button>
+                    </nav>
+                </aside>
+
+                <section class="panel-contenido">
+                    <!-- Sección: Crear Ticket -->
+                    <div id="seccion-nuevo" class="seccion visible">
+                        <div class="seccion-encabezado">
+                            <h2>Registrar Ticket</h2>
+                            <p class="texto-secundario">Describe tu solicitud o problema</p>
+                        </div>
+
+                        <div class="tarjeta">
+                            <div class="tarjeta-cuerpo">
+                                <form id="formCrearTicket">
+                                    <div class="campo-formulario">
+                                        <label for="titulo" class="etiqueta">Título</label>
+                                        <input type="text" id="titulo" class="campo-texto" placeholder="Ej: Error en login" required>
+                                    </div>
+
+                                    <div class="campo-formulario">
+                                        <label for="descripcion" class="etiqueta">Descripción</label>
+                                        <textarea id="descripcion" class="campo-texto" rows="5" placeholder="Explica el problema..." required></textarea>
+                                    </div>
+
+                                    <div id="mensajeCreacion" class="mensaje-alerta" style="display: none;"></div>
+
+                                    <button type="submit" id="btnCrear" class="boton-principal">
+                                        Enviar Ticket
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección: Mis Tickets -->
+                    <div id="seccion-listado" class="seccion">
+                        <div class="seccion-encabezado">
+                            <h2>Mis Tickets</h2>
+                            <p class="texto-secundario">Listado de tickets registrados</p>
+                        </div>
+
+                        <div id="cargandoTickets" class="contenedor-carga">
+                            <div class="spinner-carga"></div>
+                            <p>Cargando información...</p>
+                        </div>
+
+                        <div id="contenedorTickets" class="grid-tickets"></div>
+
+                        <div id="sinTickets" class="estado-vacio" style="display: none;">
+                            <div class="icono-vacio">📭</div>
+                            <h3>No hay tickets registrados</h3>
+                            <p>Registra tu primer ticket para comenzar</p>
+                            <button class="boton-principal" data-seccion="nuevo">
+                                Registrar Ticket
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Detalles del Ticket -->
+    <div id="modalTicket" class="modal">
+        <div class="modal-caja">
+            <div class="modal-encabezado">
+                <h3 class="modal-titulo">Detalle del Ticket</h3>
+                <button class="modal-cerrar" id="cerrarModal">&times;</button>
+            </div>
+            <div class="modal-cuerpo">
+                <div id="detalleTicket"></div>
+
+                <!-- Comentarios -->
+                <div class="seccion-comentarios">
+                    <h4>Actividad</h4>
+                    <div id="historialTicket" class="lista-historial"></div>
+
+                    <form id="formComentario" class="formulario-comentario">
+                        <div class="campo-formulario">
+                            <label for="comentario" class="etiqueta">Comentario</label>
+                            <textarea id="comentario" class="campo-texto" rows="3" placeholder="Escribe tu comentario..." required></textarea>
+                        </div>
+                        <button type="submit" class="boton-principal boton-pequeno">
+                            Enviar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/gestor.js"></script>
+</body>
+</html>

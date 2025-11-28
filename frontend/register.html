@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Microservicio de Usuarios - Registro">
+    <title>Registro de Usuario</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <section class="registro-wrapper">
+        <div class="registro-box">
+            <header class="registro-header">
+                <div class="registro-icon">🧾</div>
+                <h2 class="registro-titulo">Nuevo Usuario</h2>
+                <p class="registro-subtitulo">Completa el formulario para crear tu cuenta</p>
+            </header>
+
+            <div id="estado" class="registro-estado"></div>
+
+            <form id="formRegistro" class="registro-formulario">
+                <div class="campo">
+                    <label for="nombre" class="etiqueta">Nombre completo</label>
+                    <div class="grupo-input">
+                        <span class="icono-input">👤</span>
+                        <input type="text" id="nombre" class="input-texto" placeholder="Ej: Ana Torres" required autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label for="correo" class="etiqueta">Correo electrónico</label>
+                    <div class="grupo-input">
+                        <span class="icono-input">📧</span>
+                        <input type="email" id="correo" class="input-texto" placeholder="ana@example.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label for="clave" class="etiqueta">Contraseña</label>
+                    <div class="grupo-input">
+                        <span class="icono-input">🔒</span>
+                        <input type="password" id="clave" class="input-texto" placeholder="••••••••" required autocomplete="new-password" minlength="6">
+                    </div>
+                    <small class="ayuda">Debe tener al menos 6 caracteres</small>
+                </div>
+
+                <div class="campo">
+                    <label for="tipo" class="etiqueta">Rol de usuario</label>
+                    <select id="tipo" class="input-texto" required>
+                        <option value="">Selecciona un tipo</option>
+                        <option value="gestor">Gestor - Maneja sus propios tickets</option>
+                        <option value="admin">Administrador - Control total del sistema</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="btnRegistro" class="boton-enviar">
+                    Crear cuenta
+                </button>
+            </form>
+
+            <footer class="registro-footer">
+                <p><a href="../index.html">¿Ya tienes cuenta? Inicia sesión</a></p>
+            </footer>
+        </div>
+    </section>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>
