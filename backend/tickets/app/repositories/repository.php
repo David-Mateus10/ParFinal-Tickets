@@ -2,18 +2,18 @@
 
 namespace App\Repositories;
 
-use App\Controllers\TicketController;
+use App\controllers\controller;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class TicketRepository
+class Repository
 {
-    private TicketController $controller;
+    private controller $controller;
 
     public function __construct()
     {
         // Instanciamos el controlador una sola vez
-        $this->controller = new TicketController();
+        $this->controller = new controller();
     }
 
     /**

@@ -1,11 +1,11 @@
 <?php
 
-use App\Repositories\TicketRepository;
+use App\Repositories\Repository;
 use App\Middleware\tokens;
 
 return function ($app): void {
     $app->group('', function ($group): void {
-        $repo = new TicketRepository();
+        $repo = new repository();
 
         $group->post('/tickets', fn($request, $response) => $repo->registrar($request, $response));
         $group->get('/tickets/mios', fn($request, $response) => $repo->misTickets($request, $response));

@@ -7,7 +7,7 @@ use App\Repositories\ActividadRepository;
 use App\Models\AuthToken;
 use App\Models\Users;
 
-class TicketController
+class Controller
 {
     private DataRepository $ticketRepo;
     private ActividadRepository $activityRepo;
