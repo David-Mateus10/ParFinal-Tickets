@@ -1,0 +1,11 @@
+# =========================
+# PHP / Composer
+# =========================
+vendor/
+composer.lock
+
+# =========================
+# XAMPP / Configuración local
+# =========================
+htdocs/
+*.bak
