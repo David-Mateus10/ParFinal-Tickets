@@ -6,29 +6,54 @@ use App\Models\AuthToken;
 use App\Models\Users;
 use Exception;
 
-class UsuarioController
+class Usercontrollers
 {
     /**
      * Crear un nuevo usuario
      */
     public function crear(string $nombre, string $correo, string $clave, string $rol): array
     {
+        // Validaciones básicas
         if (!$nombre || !$correo || !$clave || !$rol) {
             throw new Exception("Faltan datos obligatorios", 400);
         }
 
-        if (Users::where('email', $correo)->exists()) {
-            throw new Exception("Correo ya registrado", 409);
+        // Validar email
+        if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Formato de correo electrónico inválido", 400);
         }
 
+        // Validar longitud de contraseña
+        if (strlen($clave) < 6) {
+            throw new Exception("La contraseña debe tener al menos 6 caracteres", 400);
+        }
+
+        // Validar rol
+        if (!in_array($rol, ['gestor', 'admin'])) {
+            throw new Exception("Rol inválido. Debe ser 'gestor' o 'admin'", 400);
+        }
+
+        // Verificar si el correo ya existe
+        if (Users::where('email', $correo)->exists()) {
+            throw new Exception("El correo electrónico ya está registrado", 409);
+        }
+
+        // Crear usuario con contraseña hasheada
         $usuario = Users::create([
             'name'     => $nombre,
             'email'    => $correo,
-            'password' => $clave,
+            'password' => password_hash($clave, PASSWORD_BCRYPT),
             'role'     => $rol
         ]);
 
-        return $usuario->toArray();
+        // No retornar la contraseña
+        return [
+            'id' => $usuario->id,
+            'name' => $usuario->name,
+            'email' => $usuario->email,
+            'role' => $usuario->role,
+            'created_at' => $usuario->created_at
+        ];
     }
 
     /**
@@ -37,17 +62,23 @@ class UsuarioController
     public function acceder(string $correo, string $clave): array
     {
         if (!$correo || !$clave) {
-            throw new Exception("Correo y clave requeridos", 400);
+            throw new Exception("Correo y contraseña requeridos", 400);
         }
 
         $usuario = Users::where('email', $correo)->first();
 
-        if (!$usuario || $usuario->password !== $clave) {
+        // Verificar que el usuario existe y la contraseña es correcta
+        if (!$usuario || !password_verify($clave, $usuario->password)) {
             throw new Exception("Credenciales incorrectas", 401);
         }
 
-        $token = bin2hex(random_bytes(16));
+        // Eliminar tokens antiguos del usuario (opcional: mantener solo una sesión activa)
+        // AuthToken::where('user_id', $usuario->id)->delete();
 
+        // Generar token aleatorio seguro
+        $token = bin2hex(random_bytes(32)); // 64 caracteres hexadecimales
+
+        // Guardar token en la base de datos
         AuthToken::create([
             'user_id' => $usuario->id,
             'token'   => $token
@@ -56,10 +87,10 @@ class UsuarioController
         return [
             'token' => $token,
             'usuario' => [
-                'id'    => $usuario->id,
-                'nombre'=> $usuario->name,
-                'correo'=> $usuario->email,
-                'rol'   => $usuario->role
+                'id'     => $usuario->id,
+                'nombre' => $usuario->name,
+                'correo' => $usuario->email,
+                'rol'    => $usuario->role
             ]
         ];
     }
@@ -78,7 +109,7 @@ class UsuarioController
         return [
             'mensaje' => $eliminado
                 ? 'Sesión finalizada correctamente'
-                : 'Sesión finalizada (token ya no existía)'
+                : 'Token no encontrado o ya expirado'
         ];
     }
 
@@ -89,11 +120,21 @@ class UsuarioController
     {
         $usuario = $this->desdeToken($token);
 
-        if (!$usuario || !$usuario->isAdmin()) {
-            throw new Exception("Acceso denegado", 403);
+        if (!$usuario || !$usuario->esAdministrador()) {
+            throw new Exception("Acceso denegado. Solo administradores", 403);
         }
 
-        return Users::all()->toArray();
+        // Retornar usuarios sin contraseña
+        return Users::all()->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at
+            ];
+        })->toArray();
     }
 
     /**
@@ -103,21 +144,54 @@ class UsuarioController
     {
         $usuario = $this->desdeToken($token);
 
-        if (!$usuario || !$usuario->isAdmin()) {
-            throw new Exception("Acceso denegado", 403);
+        if (!$usuario || !$usuario->esAdministrador()) {
+            throw new Exception("Acceso denegado. Solo administradores", 403);
         }
 
+        // Validar rol si se está actualizando
         if (isset($datos['role']) && !in_array($datos['role'], ['gestor', 'admin'])) {
-            throw new Exception("Rol inválido", 400);
+            throw new Exception("Rol inválido. Debe ser 'gestor' o 'admin'", 400);
         }
 
-        $actualizado = Users::where('id', $idUsuario)->update($datos);
+        // Validar email si se está actualizando
+        if (isset($datos['email'])) {
+            if (!filter_var($datos['email'], FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("Formato de correo electrónico inválido", 400);
+            }
 
-        if (!$actualizado) {
+            // Verificar que el email no esté en uso por otro usuario
+            $existente = Users::where('email', $datos['email'])
+                              ->where('id', '!=', $idUsuario)
+                              ->exists();
+            if ($existente) {
+                throw new Exception("El correo electrónico ya está en uso", 409);
+            }
+        }
+
+        // Si se está actualizando la contraseña, hashearla
+        if (isset($datos['password'])) {
+            if (strlen($datos['password']) < 6) {
+                throw new Exception("La contraseña debe tener al menos 6 caracteres", 400);
+            }
+            $datos['password'] = password_hash($datos['password'], PASSWORD_BCRYPT);
+        }
+
+        $usuarioModificar = Users::find($idUsuario);
+        if (!$usuarioModificar) {
             throw new Exception("Usuario no encontrado", 404);
         }
 
-        return ['mensaje' => 'Usuario modificado'];
+        $usuarioModificar->update($datos);
+
+        return [
+            'mensaje' => 'Usuario actualizado correctamente',
+            'usuario' => [
+                'id' => $usuarioModificar->id,
+                'name' => $usuarioModificar->name,
+                'email' => $usuarioModificar->email,
+                'role' => $usuarioModificar->role
+            ]
+        ];
     }
 
     /**
@@ -127,21 +201,30 @@ class UsuarioController
     {
         $usuario = $this->desdeToken($token);
 
-        if (!$usuario || !$usuario->isAdmin()) {
-            throw new Exception("Acceso denegado", 403);
+        if (!$usuario || !$usuario->esAdministrador()) {
+            throw new Exception("Acceso denegado. Solo administradores", 403);
         }
 
         if (!$rolNuevo || !in_array($rolNuevo, ['gestor', 'admin'])) {
-            throw new Exception("Rol inválido", 400);
+            throw new Exception("Rol inválido. Debe ser 'gestor' o 'admin'", 400);
         }
 
-        $actualizado = Users::where('id', $idUsuario)->update(['role' => $rolNuevo]);
-
-        if (!$actualizado) {
+        $usuarioModificar = Users::find($idUsuario);
+        if (!$usuarioModificar) {
             throw new Exception("Usuario no encontrado", 404);
         }
 
-        return ['mensaje' => 'Rol actualizado'];
+        $usuarioModificar->update(['role' => $rolNuevo]);
+
+        return [
+            'mensaje' => 'Rol actualizado correctamente',
+            'usuario' => [
+                'id' => $usuarioModificar->id,
+                'name' => $usuarioModificar->name,
+                'email' => $usuarioModificar->email,
+                'role' => $usuarioModificar->role
+            ]
+        ];
     }
 
     /**
@@ -151,24 +234,30 @@ class UsuarioController
     {
         $usuario = $this->desdeToken($token);
 
-        if (!$usuario || !$usuario->isAdmin()) {
-            throw new Exception("Acceso denegado", 403);
+        if (!$usuario || !$usuario->esAdministrador()) {
+            throw new Exception("Acceso denegado. Solo administradores", 403);
+        }
+
+        // Evitar que el admin se elimine a sí mismo
+        if ($usuario->id === $idUsuario) {
+            throw new Exception("No puedes eliminar tu propia cuenta", 400);
         }
 
         try {
-            $eliminado = Users::destroy($idUsuario);
-
-            if (!$eliminado) {
+            $usuarioEliminar = Users::find($idUsuario);
+            if (!$usuarioEliminar) {
                 throw new Exception("Usuario no encontrado", 404);
             }
 
-            return ['mensaje' => 'Usuario eliminado'];
+            $usuarioEliminar->delete();
+
+            return ['mensaje' => 'Usuario eliminado correctamente'];
         } catch (\Illuminate\Database\QueryException $e) {
             if ($e->getCode() === '23000') {
-                throw new Exception("No se puede eliminar: usuario con tickets asignados", 409);
+                throw new Exception("No se puede eliminar: el usuario tiene tickets asignados", 409);
             }
 
-            throw new Exception("Error al eliminar: " . $e->getMessage(), 500);
+            throw new Exception("Error al eliminar usuario: " . $e->getMessage(), 500);
         }
     }
 
@@ -184,7 +273,7 @@ class UsuarioController
         $registro = AuthToken::where('token', $token)->first();
 
         if (!$registro) {
-            throw new Exception("Token inválido", 401);
+            throw new Exception("Token inválido o expirado", 401);
         }
 
         return Users::find($registro->user_id);

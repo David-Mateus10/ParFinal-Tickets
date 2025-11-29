@@ -4,7 +4,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     // Si ya hay sesión activa, redirigir al panel correspondiente
     if (sesionActiva()) {
-        const rol = rolUsuario();
+        const rol = getUserRole();
         if (rol === "gestor") {
             window.location.href = "front/gestor-dashboard.html";
         } else if (rol === "admin") {
@@ -43,13 +43,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Consumir API de login
             const respuesta = await iniciarSesion(correo, clave);
 
-            if (respuesta.token) guardarToken(respuesta.token);
-            if (respuesta.user) guardarUsuario(respuesta.user);
+            if (respuesta.token) saveToken(respuesta.token);
+            if (respuesta.user) saveUserInfo(respuesta.user);
 
             mostrarMensaje("Acceso correcto. Redirigiendo...", "success");
 
             setTimeout(() => {
-                const rol = rolUsuario();
+                const rol = getUserRole();
                 if (rol === "gestor") {
                     window.location.href = "front/gestor-dashboard.html";
                 } else if (rol === "admin") {

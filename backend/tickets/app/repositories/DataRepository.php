@@ -11,7 +11,7 @@ class DataRepository
     /**
      * Registrar un nuevo ticket
      */
-    public function registrar(array $data): Tickets
+    public function registrar(array $data): tickets
     {
         return tickets::create($data);
     }

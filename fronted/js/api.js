@@ -89,7 +89,7 @@ async function crearTicket(datos) {
 }
 
 async function misTickets() {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/my`, { method: "GET" });
+    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/mios`, { method: "GET" });
 }
 
 async function todosLosTickets() {
@@ -101,31 +101,31 @@ async function detalleTicket(id) {
 }
 
 async function actualizarEstadoTicket(id, estado) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/status`, {
+    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/estado`, {
         method: "PUT",
         body: JSON.stringify({ estado })
     });
 }
 
 async function asignarTicket(id, adminId) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/assign`, {
+    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/asignar`, {
         method: "PUT",
         body: JSON.stringify({ admin_id: adminId })
     });
 }
 
 async function agregarComentario(id, mensaje) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/comments`, {
+    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/comentar`, {
         method: "POST",
         body: JSON.stringify({ mensaje })
     });
 }
 
 async function historialTicket(id) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/history`, { method: "GET" });
+    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/historial`, { method: "GET" });
 }
 
 async function buscarTickets(filtros) {
     const params = new URLSearchParams(filtros);
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/search?${params}`, { method: "GET" });
+    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/filtrar?${params}`, { method: "GET" });
 }
