@@ -1,13 +1,13 @@
 <?php
 
-namespace app\models;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class tickets extends Model
+class Tickets extends Model
 {
     protected $table = 'tickets';
-
+    
     protected $fillable = [
         'titulo',
         'descripcion',
@@ -18,23 +18,27 @@ class tickets extends Model
 
     public $timestamps = true;
 
-    // ======== RELACIONES ========
-
-    // El creador del ticket (gestor)
-    public function creadoPor()
+    /**
+     * El ticket pertenece a un gestor (usuario)
+     */
+    public function gestor()
     {
-        return $this->belongsTo(Users::class, 'gestor_id');
+        return $this->belongsTo(Users::class, 'gestor_id', 'id');
     }
 
-    // El administrador asignado al ticket
-    public function asignadoA()
+    /**
+     * El ticket puede estar asignado a un admin (usuario)
+     */
+    public function admin()
     {
-        return $this->belongsTo(Users::class, 'admin_id');
+        return $this->belongsTo(Users::class, 'admin_id', 'id');
     }
 
-    // Actividades registradas en el ticket
-    public function historial()
+    /**
+     * El ticket tiene muchas actividades
+     */
+    public function actividades()
     {
-        return $this->hasMany(tickets::class, 'ticket_id');
+        return $this->hasMany(Actividad::class, 'ticket_id', 'id');
     }
 }

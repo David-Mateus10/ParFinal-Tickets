@@ -1,13 +1,13 @@
 <?php
 
-namespace app\models;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Users extends Model
 {
     protected $table = 'users';
-
+    
     protected $fillable = [
         'name',
         'email',
@@ -21,35 +21,33 @@ class Users extends Model
 
     public $timestamps = true;
 
-    // ======== MÉTODOS DE ROL ========
-
-    public function esAdministrador(): bool
+    // Verificar si el usuario es administrador
+    public function isAdmin()
     {
         return $this->role === 'admin';
     }
 
-    public function esGestor(): bool
+    // Verificar si el usuario es gestor
+    public function isGestor()
     {
         return $this->role === 'gestor';
     }
 
-    // ======== RELACIONES ========
-
-    // Tickets donde el usuario es gestor
-    public function gestionados()
+    // Usuario tiene muchos tickets creados como gestor
+    public function ticketsCreados()
     {
-        return $this->hasMany(Tickets::class, 'gestor_id');
+        return $this->hasMany(Tickets::class, 'gestor_id', 'id');
     }
 
-    // Tickets donde el usuario es el administrador asignado
-    public function asignaciones()
+    // Usuario tiene muchos tickets asignados como admin
+    public function ticketsAsignados()
     {
-        return $this->hasMany(Tickets::class, 'admin_id');
+        return $this->hasMany(Tickets::class, 'admin_id', 'id');
     }
 
-    // Actividades registradas por el usuario
-    public function registroActividades()
+    // Usuario tiene muchas actividades
+    public function actividades()
     {
-        return $this->hasMany(tickets::class, 'user_id');
+        return $this->hasMany(Actividad::class, 'user_id', 'id');
     }
 }

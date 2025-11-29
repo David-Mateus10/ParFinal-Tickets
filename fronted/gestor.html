@@ -1,131 +1,126 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panel del Gestor - Microservicio de Tickets">
-    <title>Panel de Gestión de Tickets</title>
+    <meta name="description" content="Dashboard del Gestor - UsersAdmin">
+    <title>Gestor - UsersAdmin</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/gestor.css">
 </head>
+
 <body>
-    <header class="panel-encabezado">
-        <div class="contenedor">
-            <div class="encabezado-flex">
-                <div class="encabezado-izquierda">
-                    <div class="icono-logo">🎟️</div>
-                    <h1 class="titulo-app">Gestión de Tickets</h1>
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">🛠️</div>
+                    <h1 class="header-title">UsersAdmin</h1>
                 </div>
-                <div class="encabezado-derecha">
-                    <div class="usuario-datos">
-                        <span class="icono-usuario">👤</span>
-                        <span id="nombreUsuario" class="nombre-usuario">Gestor</span>
-                        <span class="etiqueta-rol">Gestor</span>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span class="user-icon">🧑‍💼</span>
+                        <span id="userName" class="user-name">Usuario</span>
+                        <span class="badge badge-primary">Gestor</span>
                     </div>
-                    <button id="btnSalir" class="boton-secundario">
-                        Salir
-                    </button>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">Salir ⎋</button>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="panel-principal">
-        <div class="contenedor">
-            <div class="panel-layout">
-                <aside class="panel-menu">
-                    <nav class="menu-navegacion">
-                        <button class="opcion-menu activa" data-seccion="nuevo">
-                            ➕ Nuevo Ticket
-                        </button>
-                        <button class="opcion-menu" data-seccion="listado">
-                            📋 Ver Mis Tickets
-                        </button>
+    <main class="dashboard-main">
+        <div class="container">
+            <div class="dashboard-grid">
+                <aside class="dashboard-sidebar">
+                    <nav class="sidebar-nav">
+                        <button class="nav-item active" data-section="crear">🆕 Nuevo Ticket</button>
+                        <button class="nav-item" data-section="mis-tickets">🗂️ Mis Tickets</button>
                     </nav>
                 </aside>
 
-                <section class="panel-contenido">
-                    <!-- Sección: Crear Ticket -->
-                    <div id="seccion-nuevo" class="seccion visible">
-                        <div class="seccion-encabezado">
+                <div class="dashboard-content">
+                    <!-------------------- Crear Ticket ------------------->
+                    <section id="section-crear" class="content-section active">
+                        <div class="section-header">
                             <h2>Registrar Ticket</h2>
-                            <p class="texto-secundario">Describe tu solicitud o problema</p>
+                            <p class="text-secondary">Describe una situación o solicitud</p>
                         </div>
 
-                        <div class="tarjeta">
-                            <div class="tarjeta-cuerpo">
-                                <form id="formCrearTicket">
-                                    <div class="campo-formulario">
-                                        <label for="titulo" class="etiqueta">Título</label>
-                                        <input type="text" id="titulo" class="campo-texto" placeholder="Ej: Error en login" required>
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="createTicketForm">
+                                    <div class="form-group">
+                                        <label for="titulo" class="form-label">Asunto</label>
+                                        <input type="text" id="titulo" class="form-control"
+                                            placeholder="Ej: Fallo en carga de usuarios" required>
                                     </div>
 
-                                    <div class="campo-formulario">
-                                        <label for="descripcion" class="etiqueta">Descripción</label>
-                                        <textarea id="descripcion" class="campo-texto" rows="5" placeholder="Explica el problema..." required></textarea>
+                                    <div class="form-group">
+                                        <label for="descripcion" class="form-label">Detalle del Ticket</label>
+                                        <textarea id="descripcion" class="form-control"
+                                            placeholder="Describe claramente el problema o requerimiento..." rows="5"
+                                            required></textarea>
                                     </div>
 
-                                    <div id="mensajeCreacion" class="mensaje-alerta" style="display: none;"></div>
+                                    <div id="createMessage" class="alert" style="display: none;"></div>
 
-                                    <button type="submit" id="btnCrear" class="boton-principal">
-                                        Enviar Ticket
-                                    </button>
+                                    <button type="submit" id="createBtn" class="btn btn-primary">Registrar 📨</button>
                                 </form>
                             </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <!-- Sección: Mis Tickets -->
-                    <div id="seccion-listado" class="seccion">
-                        <div class="seccion-encabezado">
-                            <h2>Mis Tickets</h2>
-                            <p class="texto-secundario">Listado de tickets registrados</p>
+                    <!---------------- Mis Tickets ----------------->
+                    <section id="section-mis-tickets" class="content-section">
+                        <div class="section-header">
+                            <h2>Tickets Creados</h2>
+                            <p class="text-secondary">Historial de mis incidentes</p>
                         </div>
 
-                        <div id="cargandoTickets" class="contenedor-carga">
-                            <div class="spinner-carga"></div>
-                            <p>Cargando información...</p>
+                        <div id="ticketsLoading" class="loading-container">
+                            <div class="loading-spinner"></div>
+                            <p>Cargando información…</p>
                         </div>
 
-                        <div id="contenedorTickets" class="grid-tickets"></div>
+                        <div id="ticketsContainer" class="tickets-grid"></div>
 
-                        <div id="sinTickets" class="estado-vacio" style="display: none;">
-                            <div class="icono-vacio">📭</div>
-                            <h3>No hay tickets registrados</h3>
-                            <p>Registra tu primer ticket para comenzar</p>
-                            <button class="boton-principal" data-seccion="nuevo">
-                                Registrar Ticket
-                            </button>
+                        <div id="noTickets" class="empty-state" style="display: none;">
+                            <div class="empty-icon">📂</div>
+                            <h3>No existen tickets</h3>
+                            <p>Genera uno nuevo para comenzar</p>
+                            <button class="btn btn-primary" data-section="crear">🆕 Crear Ticket</button>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Modal: Detalles del Ticket -->
-    <div id="modalTicket" class="modal">
-        <div class="modal-caja">
-            <div class="modal-encabezado">
-                <h3 class="modal-titulo">Detalle del Ticket</h3>
-                <button class="modal-cerrar" id="cerrarModal">&times;</button>
+    <!---------------------- Modal de Detalles -----------> 
+    <div id="ticketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Ticket</h3>
+                <button class="modal-close" id="closeModal">✖</button>
             </div>
-            <div class="modal-cuerpo">
-                <div id="detalleTicket"></div>
+            <div class="modal-body">
+                <div id="ticketDetails"></div>
 
-                <!-- Comentarios -->
-                <div class="seccion-comentarios">
+                <!----------------Sección de comentarios------------>
+                <div class="comments-section">
                     <h4>Actividad</h4>
-                    <div id="historialTicket" class="lista-historial"></div>
+                    <div id="ticketHistory" class="history-list"></div>
 
-                    <form id="formComentario" class="formulario-comentario">
-                        <div class="campo-formulario">
-                            <label for="comentario" class="etiqueta">Comentario</label>
-                            <textarea id="comentario" class="campo-texto" rows="3" placeholder="Escribe tu comentario..." required></textarea>
+                    <!----------Agregar comentario-------------->
+                    <form id="addCommentForm" class="comment-form">
+                        <div class="form-group">
+                            <label for="comentario" class="form-label">Comentario</label>
+                            <textarea id="comentario" class="form-control"
+                                placeholder="Escribe un comentario..." rows="3" required></textarea>
                         </div>
-                        <button type="submit" class="boton-principal boton-pequeno">
-                            Enviar
-                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">Enviar 💬</button>
                     </form>
                 </div>
             </div>
@@ -135,6 +130,7 @@
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/gestor.js"></script>
+    <script src="js/gestor-dashboard.js"></script>
 </body>
+
 </html>

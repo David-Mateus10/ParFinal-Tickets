@@ -3,33 +3,65 @@
 use App\Repositories\Repository;
 use App\Middleware\Token;
 
-return function ($app): void {
-    $repo = new Repository();
+return function ($app) {
 
-    // ========================================
-    // RUTAS PÚBLICAS (sin autenticación)
-    // ========================================
+    // Ruta raíz para evitar Not Found
+    $app->get('/', function ($req, $res) {
+        $res->getBody()->write("API Usuarios funcionando ✔️");
+        return $res->withHeader("Content-Type", "text/plain");
+    });
 
-    $app->post('/usuarios/crear', fn($req, $res) => $repo->crear($req, $res));
+    $map = function($class){
+        return new $class();
+    };
 
-    $app->post('/usuarios/acceder', fn($req, $res) => $repo->acceder($req, $res));
+    // Helper para endpoints con token
+    $secure = function($callable){
+        return $callable->add(new Token());
+    };
 
-    // ========================================
-    // RUTAS PROTEGIDAS (requieren token)
-    // ========================================
+    // Registro
+    $app->post('/register', function ($request, $response) use ($map) {
+        return $map(Repository::class)->register($request, $response);
+    });
 
-    $app->post('/usuarios/salir', fn($req, $res) => $repo->salir($req, $res))
-        ->add(new Token());
+    // Login
+    $app->post('/login', function ($request, $response) use ($map) {
+        return $map(Repository::class)->login($request, $response);
+    });
 
-    $app->get('/usuarios', fn($req, $res) => $repo->listar($req, $res))
-        ->add(new Token());
+    // Logout (requiere token)
+    $secure(
+        $app->post('/logout', function ($request, $response) use ($map) {
+            return $map(Repository::class)->logout($request, $response);
+        })
+    );
 
-    $app->put('/usuarios/{id}', fn($req, $res, $args) => $repo->modificar($req, $res, $args))
-        ->add(new Token());
+    // Listar usuarios (requiere token)
+    $secure(
+        $app->get('/users', function ($request, $response) use ($map) {
+            return $map(Repository::class)->listUsers($request, $response);
+        })
+    );
 
-    $app->patch('/usuarios/{id}/rol', fn($req, $res, $args) => $repo->cambiarRol($req, $res, $args))
-        ->add(new Token());
+    // Actualizar usuario (requiere token)
+    $secure(
+        $app->put('/users/{id}', function ($request, $response, $args) use ($map) {
+            return $map(Repository::class)->updateUser($request, $response, $args);
+        })
+    );
 
-    $app->delete('/usuarios/{id}', fn($req, $res, $args) => $repo->eliminar($req, $res, $args))
-        ->add(new Token());
+    // Cambiar rol (requiere token)
+    $secure(
+        $app->patch('/users/{id}/role', function ($request, $response, $args) use ($map) {
+            return $map(Repository::class)->changeUserRole($request, $response, $args);
+        })
+    );
+
+    // Eliminar usuario (requiere token)
+    $secure(
+        $app->delete('/users/{id}', function ($request, $response, $args) use ($map) {
+            return $map(Repository::class)->deleteUser($request, $response, $args);
+        })
+    );
 };

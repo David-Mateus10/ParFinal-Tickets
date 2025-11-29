@@ -2,23 +2,29 @@
 
 namespace App\Middleware;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 
 class Cors
 {
-    /**
-     * Middleware para habilitar CORS
-     * Autoriza solicitudes desde cualquier origen con cabeceras comunes
-     */
-    public function __invoke(ServerRequestInterface $solicitud, RequestHandlerInterface $gestor): ResponseInterface
+    public function __invoke(Request $request, RequestHandler $handler): Response
     {
-        $respuesta = $gestor->handle($solicitud);
+        $resp = $handler->handle($request);
+        return $this->attachHeaders($resp);
+    }
 
-        return $respuesta
-            ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, PATCH, DELETE')
-            ->withHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, Accept, Origin, X-Requested-With');
+    private function attachHeaders(Response $response): Response
+    {
+        $headers = [
+            'Access-Control-Allow-Origin'  => '*',
+            'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With, Accept, Origin',
+            'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+        ];
+
+        foreach ($headers as $key => $value) {
+            $response = $response->withHeader($key, $value);
+        }
+        return $response;
     }
 }

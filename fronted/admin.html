@@ -1,179 +1,201 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Panel de Administración - Gestión de Tickets y Usuarios" />
-  <title>Administrador - Panel de Control</title>
-  <link rel="stylesheet" href="css/main.css" />
-  <link rel="stylesheet" href="css/admin.css" />
+    <meta charset="UTF-8">
+    <meta name="description" content="Panel Administrador - Tickets System">
+    <title>Panel Admin</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <script>
+        const API_CONFIG = {
+            USERS_API: 'http://localhost:8000/usersadmin',
+            TICKETS_API: 'http://localhost:8001'
+        };
+        window.API_CONFIG = API_CONFIG;
+    </script>
 </head>
+
 <body>
-  <header class="admin-encabezado">
-    <div class="contenedor">
-      <div class="encabezado-flex">
-        <div class="encabezado-izquierda">
-          <div class="icono-logo">🛠️</div>
-          <h1 class="titulo-app">Panel de Administración</h1>
-        </div>
-        <div class="encabezado-derecha">
-          <div class="usuario-datos">
-            <span class="icono-usuario">👤</span>
-            <span id="nombreAdmin" class="nombre-usuario">Administrador</span>
-            <span class="etiqueta-rol">ADMIN</span>
-          </div>
-          <button id="btnSalir" class="boton-secundario">Cerrar Sesión</button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main class="admin-principal">
-    <div class="contenedor">
-      <nav class="admin-navegacion">
-        <button class="nav-opcion activa" data-seccion="tickets">🎫 Tickets</button>
-        <button class="nav-opcion" data-seccion="usuarios">👥 Usuarios</button>
-        <button class="nav-opcion" data-seccion="nuevo-usuario">➕ Nuevo Usuario</button>
-      </nav>
-
-      <!-- Sección: Tickets -->
-      <section id="seccion-tickets" class="admin-seccion visible">
-        <div class="seccion-encabezado">
-          <h2>Gestión de Tickets</h2>
-          <p class="texto-secundario">Filtra y administra todos los tickets</p>
-        </div>
-
-        <form id="formFiltroTickets" class="formulario-filtro">
-          <div class="grid-filtros">
-            <div class="campo-formulario">
-              <label for="estadoTicket">Estado</label>
-              <select id="estadoTicket">
-                <option value="">Todos</option>
-                <option value="abierto">Abierto</option>
-                <option value="en_progreso">En Progreso</option>
-                <option value="resuelto">Resuelto</option>
-                <option value="cerrado">Cerrado</option>
-              </select>
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">🛠️</div>
+                    <h1 class="header-title">Panel de Administración</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span class="user-icon">🧑‍💼</span>
+                        <span id="userName" class="user-name">Administrador</span>
+                        <span class="badge badge-danger">ADMIN</span>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">🚪 Salir</button>
+                </div>
             </div>
-            <div class="campo-formulario">
-              <label for="creadorTicket">Creador</label>
-              <select id="creadorTicket"></select>
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <div class="container">
+
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="tickets">📨 Tickets</button>
+                <button class="tab-btn" data-tab="usuarios">👤 Usuarios</button>
+                <button class="tab-btn" data-tab="crear-usuario">➕ Nuevo Usuario</button>
             </div>
-            <div class="campo-formulario">
-              <label for="asignadoTicket">Asignado a</label>
-              <select id="asignadoTicket"></select>
+
+            <!-- TICKETS -->
+            <div id="tab-tickets" class="tab-content active">
+                <div class="section-header">
+                    <h2>📨 Tickets Registrados</h2>
+                    <p class="text-secondary">Administración general de tickets</p>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <form id="filterForm" class="filter-form">
+                            <div class="filter-grid">
+                                <div class="form-group">
+                                    <label for="filterEstado" class="form-label">🔎 Estado</label>
+                                    <select id="filterEstado" class="form-control">
+                                        <option value="">Todos</option>
+                                        <option value="abierto">Abierto</option>
+                                        <option value="en_progreso">En Progreso</option>
+                                        <option value="resuelto">Resuelto</option>
+                                        <option value="cerrado">Cerrado</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="filterGestor" class="form-label">✏️ Creador</label>
+                                    <select id="filterGestor" class="form-control">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="filterAdmin" class="form-label">👨‍💼 Asignado</label>
+                                    <select id="filterAdmin" class="form-control">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary btn-block white">🔍 Filtrar</button>
+                                    <button type="button" id="clearFilters" class="btn btn-secondary btn-block">❌ Limpiar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div id="ticketsLoading" class="loading-container">
+                            <div class="loading-spinner"></div>
+                            <p>🔄 Cargando información...</p>
+                        </div>
+
+                        <div id="ticketsTableContainer" style="display: none;">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Título</th>
+                                        <th>Estado</th>
+                                        <th>Autor</th>
+                                        <th>Encargado</th>
+                                        <th>Fecha</th>
+                                        <th>⚙️</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ticketsTableBody"></tbody>
+                            </table>
+                        </div>
+
+                        <div id="noTickets" class="empty-state" style="display: none;">
+                            <h3>🕳️ No hay datos</h3>
+                            <p>No existen tickets con estos filtros.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="acciones-filtro">
-              <button type="submit" class="boton-principal">Filtrar</button>
-              <button type="button" id="limpiarFiltros" class="boton-secundario">Limpiar</button>
+
+            <!-- USUARIOS -->
+            <div id="tab-usuarios" class="tab-content">
+                <div class="section-header">
+                    <h2>👥 Usuarios del sistema</h2>
+                    <p>Administración de cuentas registradas</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div id="usersLoading" class="loading-container">
+                            <div class="loading-spinner"></div>
+                            <p>📡 Recuperando usuarios...</p>
+                        </div>
+
+                        <div id="usersTableContainer" style="display: none;">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre</th>
+                                        <th>Correo</th>
+                                        <th>Rol</th>
+                                        <th>Fecha</th>
+                                        <th>⚙️</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </form>
 
-        <div id="cargandoTickets" class="contenedor-carga">
-          <div class="spinner-carga"></div>
-          <p>Cargando tickets...</p>
+            <!-- CREAR USUARIO -->
+            <div id="tab-crear-usuario" class="tab-content">
+                <div class="section-header">
+                    <h2>🆕 Alta de Usuario</h2>
+                    <p>Registro de nuevo usuario del sistema</p>
+                </div>
+
+                <div id="createUserMessage" class="auth-message"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <form id="createUserForm">
+
+                            <label class="form-label">🧑‍🦱 Nombre</label>
+                            <input type="text" id="newUserName" required class="form-control">
+
+                            <label class="form-label">📩 Email</label>
+                            <input type="email" id="newUserEmail" required class="form-control">
+
+                            <label class="form-label">🔑 Contraseña</label>
+                            <input type="password" id="newUserPassword" required minlength="6" class="form-control">
+
+                            <label class="form-label">🎚️ Rol</label>
+                            <select id="newUserRole" class="form-control">
+                                <option value="gestor">Gestor</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+
+                            <br>
+                            <button type="submit" class="btn btn-primary btn-block btn-lg">💾 Guardar Usuario</button>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
         </div>
+    </main>
 
-        <div id="tablaTickets" class="tabla-responsive" style="display: none;">
-          <table class="tabla">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Título</th>
-                <th>Estado</th>
-                <th>Creador</th>
-                <th>Asignado</th>
-                <th>Fecha</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="cuerpoTickets"></tbody>
-          </table>
-        </div>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/admin-tickets.js"></script>
+    <script src="js/admin-users.js"></script>
+    <script src="js/admin-dashboard.js"></script>
 
-        <div id="sinTickets" class="estado-vacio" style="display: none;">
-          <div class="icono-vacio">📭</div>
-          <h3>No hay tickets disponibles</h3>
-          <p>Modifica los filtros o espera nuevos registros</p>
-        </div>
-      </section>
-
-      <!-- Sección: Usuarios -->
-      <section id="seccion-usuarios" class="admin-seccion">
-        <div class="seccion-encabezado">
-          <h2>Gestión de Usuarios</h2>
-          <p class="texto-secundario">Consulta y modifica usuarios registrados</p>
-        </div>
-
-        <div id="cargandoUsuarios" class="contenedor-carga">
-          <div class="spinner-carga"></div>
-          <p>Cargando usuarios...</p>
-        </div>
-
-        <div id="tablaUsuarios" class="tabla-responsive" style="display: none;">
-          <table class="tabla">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Rol</th>
-                <th>Registro</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="cuerpoUsuarios"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Sección: Crear Usuario -->
-      <section id="seccion-nuevo-usuario" class="admin-seccion">
-        <div class="seccion-encabezado">
-          <h2>Registrar Usuario</h2>
-          <p class="texto-secundario">Agrega un nuevo usuario al sistema</p>
-        </div>
-
-        <div id="mensajeUsuario" class="mensaje-alerta"></div>
-
-        <form id="formCrearUsuario" class="formulario-registro">
-          <div class="campo-formulario">
-            <label for="nombreNuevo">Nombre Completo</label>
-            <input type="text" id="nombreNuevo" placeholder="Ej: Laura Gómez" required />
-          </div>
-
-          <div class="campo-formulario">
-            <label for="correoNuevo">Correo Electrónico</label>
-            <input type="email" id="correoNuevo" placeholder="laura@example.com" required />
-          </div>
-
-          <div class="campo-formulario">
-            <label for="claveNuevo">Contraseña</label>
-            <input type="password" id="claveNuevo" placeholder="••••••••" required minlength="6" />
-            <small class="ayuda">Debe tener al menos 6 caracteres</small>
-          </div>
-
-          <div class="campo-formulario">
-            <label for="rolNuevo">Rol</label>
-            <select id="rolNuevo" required>
-              <option value="">Selecciona un rol</option>
-              <option value="gestor">Gestor</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </div>
-
-          <button type="submit" id="btnRegistrarUsuario" class="boton-principal">
-            Registrar
-          </button>
-        </form>
-      </section>
-    </div>
-  </main>
-
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/admin.js"></script>
 </body>
 </html>

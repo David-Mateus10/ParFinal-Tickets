@@ -1,131 +1,161 @@
-/* =======================
-   Función base de peticiones
-   ======================= */
-async function requestAPI(endpoint, options = {}) {
+function buildHeaders(options, token) {
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (options.headers) Object.assign(headers, options.headers);
+    if (token && !options.skipAuth) headers['Authorization'] = token;
+
+    return headers;
+}
+
+///////GENERADOR GENERAL DE REQUEST
+async function apiRequest(url, options = {}) {
+    const token = getToken();
+
     try {
-        const token = getToken();
+        const response = await fetch(url, {
+            ...options,
+            headers: buildHeaders(options, token)
+        });
 
-        const headers = {
-            "Content-Type": "application/json",
-            ...(options.headers || {})
-        };
-
-        if (token && !options.skipAuth) {
-            headers["Authorization"] = token;
-        }
-
-        const config = { ...options, headers };
-        const res = await fetch(endpoint, config);
-
-        if (res.status === 401 && !options.skipAuth) {
+        //// Manejo de token expirado
+        if (response.status === 401 && !options.skipAuth) {
             removeToken();
-            window.location.href = "../index.html";
-            throw new Error("Sesión expirada");
+            window.location.href = '../index.html';
+            throw new Error('Sesión expirada');
         }
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Error en la petición");
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error en la petición');
 
         return data;
-    } catch (err) {
-        console.error("Error en requestAPI:", err);
-        throw err;
+
+    } catch (error) {
+        console.error(`[API ERROR] ${url}`, error);
+        throw error;
     }
 }
 
-/* =======================
-   Usuarios
-   ======================= */
-async function iniciarSesion(correo, clave) {
-    return await requestAPI(`${API_CONFIG.USERS_API}/login`, {
-        method: "POST",
-        body: JSON.stringify({ email: correo, password: clave }),
-        skipAuth: true
+////////////////////////////////////////////////////
+//                    USERS API
+////////////////////////////////////////////////////
+
+function usersUrl(path) {
+    return `${API_CONFIG.USERS_API}${path}`;
+}
+
+///////LOGIN
+async function login(email, password) {
+    return apiRequest(usersUrl('/login'), {
+        method: 'POST',
+        skipAuth: true,
+        body: JSON.stringify({ email, password })
     });
 }
 
-async function registrarUsuario(datos) {
-    return await requestAPI(`${API_CONFIG.USERS_API}/register`, {
-        method: "POST",
-        body: JSON.stringify(datos),
-        skipAuth: true
+///////REGISTER
+async function register(userData) {
+    return apiRequest(usersUrl('/register'), {
+        method: 'POST',
+        skipAuth: true,
+        body: JSON.stringify(userData)
     });
 }
 
-async function cerrarSesion() {
-    return await requestAPI(`${API_CONFIG.USERS_API}/logout`, { method: "POST" });
+///////LOGOUT
+async function logoutAPI() {
+    return apiRequest(usersUrl('/logout'), { method: 'POST' });
 }
 
-async function obtenerUsuarios() {
-    return await requestAPI(`${API_CONFIG.USERS_API}/users`, { method: "GET" });
+///////LIST USERS
+async function listUsers() {
+    return apiRequest(usersUrl('/users'), { method: 'GET' });
 }
 
-async function modificarUsuario(id, datos) {
-    return await requestAPI(`${API_CONFIG.USERS_API}/users/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(datos)
+///////UPDATE USER
+async function updateUser(id, userData) {
+    return apiRequest(usersUrl(`/users/${id}`), {
+        method: 'PUT',
+        body: JSON.stringify(userData)
     });
 }
 
-async function cambiarRolUsuario(id, rol) {
-    return await requestAPI(`${API_CONFIG.USERS_API}/users/${id}/role`, {
-        method: "PATCH",
-        body: JSON.stringify({ role: rol })
+///////CHANGE ROLE
+async function changeUserRole(id, role) {
+    return apiRequest(usersUrl(`/users/${id}/role`), {
+        method: 'PATCH',
+        body: JSON.stringify({ role })
     });
 }
 
-async function eliminarUsuario(id) {
-    return await requestAPI(`${API_CONFIG.USERS_API}/users/${id}`, { method: "DELETE" });
-}
-
-/* =======================
-   Tickets
-   ======================= */
-async function crearTicket(datos) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets`, {
-        method: "POST",
-        body: JSON.stringify(datos)
+///////DELETE USER
+async function deleteUser(id) {
+    return apiRequest(usersUrl(`/users/${id}`), {
+        method: 'DELETE'
     });
 }
 
-async function misTickets() {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/mios`, { method: "GET" });
+////////////////////////////////////////////////////
+//                    TICKETS API
+////////////////////////////////////////////////////
+
+function ticketsUrl(path) {
+    return `${API_CONFIG.TICKETS_API}${path}`;
 }
 
-async function todosLosTickets() {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets`, { method: "GET" });
+///////CREATE TICKET
+async function createTicket(ticketData) {
+    return apiRequest(ticketsUrl('/tickets'), {
+        method: 'POST',
+        body: JSON.stringify(ticketData)
+    });
 }
 
-async function detalleTicket(id) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}`, { method: "GET" });
+///////LIST MY TICKETS
+async function listMyTickets() {
+    return apiRequest(ticketsUrl('/tickets/my'), { method: 'GET' });
 }
 
-async function actualizarEstadoTicket(id, estado) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/estado`, {
-        method: "PUT",
+///////LIST ALL TICKETS
+async function listAllTickets() {
+    return apiRequest(ticketsUrl('/tickets'), { method: 'GET' });
+}
+
+///////DETAILS TICKET
+async function getTicketDetails(id) {
+    return apiRequest(ticketsUrl(`/tickets/${id}`), { method: 'GET' });
+}
+
+///////UPDATE STATUS
+async function updateTicketStatus(id, estado) {
+    return apiRequest(ticketsUrl(`/tickets/${id}/status`), {
+        method: 'PUT',
         body: JSON.stringify({ estado })
     });
 }
 
-async function asignarTicket(id, adminId) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/asignar`, {
-        method: "PUT",
+///////ASSIGN TICKET
+async function assignTicket(id, adminId) {
+    return apiRequest(ticketsUrl(`/tickets/${id}/assign`), {
+        method: 'PUT',
         body: JSON.stringify({ admin_id: adminId })
     });
 }
 
-async function agregarComentario(id, mensaje) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/comentar`, {
-        method: "POST",
+///////ADD COMMENT
+async function addComment(id, mensaje) {
+    return apiRequest(ticketsUrl(`/tickets/${id}/comments`), {
+        method: 'POST',
         body: JSON.stringify({ mensaje })
     });
 }
 
-async function historialTicket(id) {
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/${id}/historial`, { method: "GET" });
+///////GET TICKET HISTORY
+async function getTicketHistory(id) {
+    return apiRequest(ticketsUrl(`/tickets/${id}/history`), { method: 'GET' });
 }
 
-async function buscarTickets(filtros) {
-    const params = new URLSearchParams(filtros);
-    return await requestAPI(`${API_CONFIG.TICKETS_API}/tickets/filtrar?${params}`, { method: "GET" });
+///////SEARCH TICKETS
+async function searchTickets(filters) {
+    const query = new URLSearchParams(filters).toString();
+    return apiRequest(ticketsUrl(`/tickets/search?${query}`), { method: 'GET' });
 }

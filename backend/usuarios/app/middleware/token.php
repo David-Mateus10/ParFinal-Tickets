@@ -10,47 +10,66 @@ use Slim\Psr7\Response;
 
 class Token
 {
-    public function __invoke(
-        ServerRequestInterface $solicitud,
-        RequestHandlerInterface $gestor
-    ): ResponseInterface {
-        // Extraer encabezado Authorization desde múltiples fuentes
-        $encabezado =
-            $solicitud->getHeaderLine('Authorization') ?:
-            ($solicitud->getServerParams()['HTTP_AUTHORIZATION'] ?? '') ?:
-            ($solicitud->getServerParams()['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
-
-        if (!$encabezado) {
-            return $this->respuestaError('Token no proporcionado', 401);
-        }
-
-        // Obtener el token limpio
-        $token = preg_match('/Bearer\s+(.*)$/i', $encabezado, $coincidencias)
-            ? trim($coincidencias[1])
-            : trim($encabezado);
+    public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $token = $this->extractToken($request);
 
         if (!$token) {
-            return $this->respuestaError('Token vacío o mal formado', 401);
+            return $this->fail("Token requerido", 401);
         }
 
-        // Validar existencia del token en la base de datos
-        $registro = AuthToken::where('token', $token)->first();
-
-        if (!$registro) {
-            return $this->respuestaError('Token inválido', 403);
+        if (!$this->tokenExists($token)) {
+            return $this->fail("Token inválido", 401);
         }
 
-        // Token válido, continuar con la petición
-        return $gestor->handle($solicitud);
+        return $handler->handle($request);
     }
 
-    private function respuestaError(string $mensaje, int $codigo): ResponseInterface
-    {
-        $respuesta = new Response();
-        $respuesta->getBody()->write(json_encode(['error' => $mensaje], JSON_UNESCAPED_UNICODE));
+    /* =====================
+       MÉTODOS PRIVADOS
+    ======================*/
 
-        return $respuesta
-            ->withStatus($codigo)
-            ->withHeader('Content-Type', 'application/json');
+    /// Obtiene token del header o server params
+    private function extractToken(ServerRequestInterface $request): ?string
+    {
+        $val = $this->getAuthValue($request);
+
+        if (!$val) {
+            return null;
+        }
+
+        if (stripos($val, "Bearer ") === 0) {
+            return trim(substr($val, 7));
+        }
+
+        return trim($val);
+    }
+
+    private function getAuthValue(ServerRequestInterface $request): ?string
+    {
+        $sources = [
+            $request->getHeaderLine('Authorization'),
+            $request->getServerParams()['HTTP_AUTHORIZATION'] ?? null,
+            $request->getServerParams()['REDIRECT_HTTP_AUTHORIZATION'] ?? null,
+        ];
+
+        foreach ($sources as $src) {
+            if (!empty($src)) {
+                return $src;
+            }
+        }
+        return null;
+    }
+
+    private function tokenExists(string $token): bool
+    {
+        return AuthToken::where('token', $token)->exists();
+    }
+
+    private function fail(string $message, int $status): ResponseInterface
+    {
+        $res = new Response();
+        $res->getBody()->write(json_encode(['error' => $message]));
+        return $res->withStatus($status)->withHeader("Content-Type", "application/json");
     }
 }

@@ -1,57 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Sistema de Gestión de Tickets - Inicio de Sesión" />
-    <title>Inicio de Sesión | Sistema de Tickets</title>
-    <!-- CSS desde carpeta fronted -->
-    <link rel="stylesheet" href="./fronted/css/main.css">
-    <link rel="stylesheet" href="./fronted/css/auth.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="UsersAdmin - Inicio de Sesión">
+    <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="fronted/css/main.css">
+    <link rel="stylesheet" href="fronted/css/auth.css">
 </head>
+
 <body>
-    <main class="auth-container">
-        <section class="auth-card">
-            <header class="auth-header">
-                <div class="auth-logo" aria-hidden="true">🎟️</div>
-                <h1 class="auth-title">Sistema de Tickets</h1>
-                <p class="auth-subtitle">Accede con tus credenciales</p>
-            </header>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">🛠️</div>
+                <h1 class="auth-title">UsersAdmin</h1>
+                <p class="auth-subtitle">Bienvenido — Inicia sesión</p>
+            </div>
 
-            <div id="message" class="auth-message" role="alert"></div>
+            <!---------- Mensaje de estado ---------->
+            <div id="message" class="auth-message"></div>
 
-            <form id="loginForm" class="auth-form" novalidate>
+            <!------------Formulario de login---------->
+            <form id="loginForm" class="auth-form">
+
                 <div class="form-group">
                     <label for="email" class="form-label">Correo Electrónico</label>
                     <div class="input-group">
-                        <span class="input-icon" aria-hidden="true">✉️</span>
-                        <input type="email" id="email" class="form-control" placeholder="ejemplo@correo.com" required autocomplete="email" />
+                        <span class="input-icon">✉️</span>
+                        <input type="email" id="email" class="form-control"
+                            placeholder="ejemplo@empresa.com" required autocomplete="email">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="password" class="form-label">Contraseña</label>
                     <div class="input-group">
-                        <span class="input-icon" aria-hidden="true">🔑</span>
-                        <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" minlength="6" />
+                        <span class="input-icon">🔑</span>
+                        <input type="password" id="password" class="form-control"
+                            placeholder="••••••••" required autocomplete="current-password">
                     </div>
                 </div>
 
                 <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg">
-                    Iniciar Sesión
+                    Entrar 🚀
                 </button>
             </form>
 
-            <footer class="auth-footer">
-                <p>¿No tienes cuenta? <a href="fronted/register.html">Regístrate aquí</a></p>
-            </footer>
-        </section>
-    </main>
+            <div class="auth-footer">
+                <p>¿No tienes cuenta? <a href="fronted/register.html">Crear cuenta</a></p>
+            </div>
 
-    <!-- JS desde carpeta fronted -->
+        </div>
+    </div>
+
     <script src="fronted/js/config.js"></script>
     <script src="fronted/js/auth.js"></script>
     <script src="fronted/js/api.js"></script>
     <script src="fronted/js/login.js"></script>
 </body>
+
 </html>

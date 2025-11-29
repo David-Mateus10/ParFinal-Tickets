@@ -9,7 +9,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class Repository
 {
-    private array $codigosError = [
+    private UsuarioController $ctrl;
+
+    private array $codesError = [
         400 => 400,
         401 => 401,
         403 => 403,
@@ -18,169 +20,132 @@ class Repository
         'default' => 500
     ];
 
-    /**
-     * Crear nuevo usuario
-     */
-    public function crear(Request $req, Response $res): Response
+    public function __construct()
     {
-        try {
-            $datos = $req->getParsedBody();
+        $this->ctrl = new UsuarioController();
+    }
 
-            $ctrl = new UsuarioController();
-            $usuario = $ctrl->crear(
-                $datos['name'] ?? null,
-                $datos['email'] ?? null,
-                $datos['password'] ?? null,
-                $datos['role'] ?? null
+    /* =====================
+       MÉTODOS PÚBLICOS
+    ======================*/
+
+    public function register(Request $request, Response $response): Response
+    {
+        return $this->execute(function() use ($request){
+            $body = $request->getParsedBody();
+            return $this->ctrl->register(
+                $body['name']     ?? null,
+                $body['email']    ?? null,
+                $body['password'] ?? null,
+                $body['role']     ?? null
             );
-
-            $res->getBody()->write(json_encode($usuario, JSON_UNESCAPED_UNICODE));
-            return $res->withHeader('Content-Type', 'application/json');
-        } catch (Exception $ex) {
-            return $this->respuestaError($res, $ex);
-        }
+        }, $response);
     }
 
-    /**
-     * Iniciar sesión
-     */
-    public function acceder(Request $req, Response $res): Response
+    public function login(Request $request, Response $response): Response
     {
-        try {
-            $datos = $req->getParsedBody();
-
-            $ctrl = new UsuarioController();
-            $resultado = $ctrl->acceder(
-                $datos['email'] ?? null,
-                $datos['password'] ?? null
+        return $this->execute(function() use ($request){
+            $body = $request->getParsedBody();
+            return $this->ctrl->login(
+                $body['email']    ?? null,
+                $body['password'] ?? null
             );
-
-            $res->getBody()->write(json_encode($resultado, JSON_UNESCAPED_UNICODE));
-            return $res->withHeader('Content-Type', 'application/json');
-        } catch (Exception $ex) {
-            return $this->respuestaError($res, $ex);
-        }
+        }, $response);
     }
 
-    /**
-     * Cerrar sesión
-     */
-    public function salir(Request $req, Response $res): Response
+    public function logout(Request $request, Response $response): Response
+    {
+        return $this->execute(function() use ($request){
+            return $this->ctrl->logout($this->extractToken($request));
+        }, $response);
+    }
+
+    public function listUsers(Request $request, Response $response): Response
+    {
+        return $this->execute(function() use ($request){
+            return $this->ctrl->getUsers($this->extractToken($request));
+        }, $response);
+    }
+
+    public function updateUser(Request $request, Response $response, array $args): Response
+    {
+        return $this->execute(function() use ($request, $args){
+            return $this->ctrl->updateUser(
+                $this->extractToken($request),
+                $args['id'],
+                $request->getParsedBody()
+            );
+        }, $response);
+    }
+
+    public function changeUserRole(Request $request, Response $response, array $args): Response
+    {
+        return $this->execute(function() use ($request, $args){
+            $body = $request->getParsedBody();
+            return $this->ctrl->changeUserRole(
+                $this->extractToken($request),
+                $args['id'],
+                $body['role'] ?? null
+            );
+        }, $response);
+    }
+
+    public function deleteUser(Request $request, Response $response, array $args): Response
+    {
+        return $this->execute(function() use ($request, $args){
+            return $this->ctrl->deleteUser(
+                $this->extractToken($request),
+                $args['id']
+            );
+        }, $response);
+    }
+
+    /* =====================
+       EJECUTOR CENTRAL DE RESPUESTAS
+    ======================*/
+
+    private function execute(callable $action, Response $response): Response
     {
         try {
-            $token = $this->extraerToken($req);
-
-            $ctrl = new UsuarioController();
-            $resultado = $ctrl->salir($token);
-
-            $res->getBody()->write(json_encode($resultado, JSON_UNESCAPED_UNICODE));
-            return $res->withHeader('Content-Type', 'application/json');
+            $result = $action();
+            return $this->success($response, $result);
         } catch (Exception $ex) {
-            return $this->respuestaError($res, $ex);
+            return $this->fail($response, $ex);
         }
     }
 
-    /**
-     * Listar usuarios (solo admin)
-     */
-    public function listar(Request $req, Response $res): Response
+    private function success(Response $response, $data): Response
     {
-        try {
-            $token = $this->extraerToken($req);
-
-            $ctrl = new UsuarioController();
-            $usuarios = $ctrl->listar($token);
-
-            $res->getBody()->write(json_encode($usuarios, JSON_UNESCAPED_UNICODE));
-            return $res->withHeader('Content-Type', 'application/json');
-        } catch (Exception $ex) {
-            return $this->respuestaError($res, $ex);
-        }
+        $response->getBody()->write(json_encode($data, JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
-    /**
-     * Modificar usuario (solo admin)
-     */
-    public function modificar(Request $req, Response $res, array $args): Response
+    private function fail(Response $response, Exception $ex): Response
     {
-        try {
-            $token = $this->extraerToken($req);
-            $idUsuario = $args['id'];
-            $datos = $req->getParsedBody();
-
-            $ctrl = new UsuarioController();
-            $resultado = $ctrl->modificar($token, $idUsuario, $datos);
-
-            $res->getBody()->write(json_encode($resultado, JSON_UNESCAPED_UNICODE));
-            return $res->withHeader('Content-Type', 'application/json');
-        } catch (Exception $ex) {
-            return $this->respuestaError($res, $ex);
-        }
+        $status = $this->codesError[$ex->getCode()] ?? $this->codesError['default'];
+        $response->getBody()->write(json_encode(['error' => $ex->getMessage()], JSON_UNESCAPED_UNICODE));
+        return $response->withStatus($status)->withHeader('Content-Type', 'application/json');
     }
 
-    /**
-     * Cambiar rol de usuario (solo admin)
-     */
-    public function cambiarRol(Request $req, Response $res, array $args): Response
+    /* =====================
+       TOKEN
+    ======================*/
+
+    private function extractToken(Request $request): string
     {
-        try {
-            $token = $this->extraerToken($req);
-            $idUsuario = $args['id'];
-            $datos = $req->getParsedBody();
+        $sources = [
+            $request->getHeaderLine('Authorization'),
+            $request->getServerParams()['HTTP_AUTHORIZATION'] ?? null,
+            $request->getServerParams()['REDIRECT_HTTP_AUTHORIZATION'] ?? null,
+        ];
 
-            $ctrl = new UsuarioController();
-            $resultado = $ctrl->cambiarRol($token, $idUsuario, $datos['role'] ?? null);
-
-            $res->getBody()->write(json_encode($resultado, JSON_UNESCAPED_UNICODE));
-            return $res->withHeader('Content-Type', 'application/json');
-        } catch (Exception $ex) {
-            return $this->respuestaError($res, $ex);
+        foreach ($sources as $header){
+            if (!empty($header)){
+                return preg_match('/Bearer\s+(.*)$/i', $header, $m)
+                    ? trim($m[1])
+                    : trim($header);
+            }
         }
-    }
-
-    /**
-     * Eliminar usuario (solo admin)
-     */
-    public function eliminar(Request $req, Response $res, array $args): Response
-    {
-        try {
-            $token = $this->extraerToken($req);
-            $idUsuario = $args['id'];
-
-            $ctrl = new UsuarioController();
-            $resultado = $ctrl->eliminar($token, $idUsuario);
-
-            $res->getBody()->write(json_encode($resultado, JSON_UNESCAPED_UNICODE));
-            return $res->withHeader('Content-Type', 'application/json');
-        } catch (Exception $ex) {
-            return $this->respuestaError($res, $ex);
-        }
-    }
-
-    /**
-     * Extraer token del request
-     */
-    private function extraerToken(Request $req): string
-    {
-        $authHeader =
-            $req->getHeaderLine('Authorization') ?:
-            ($req->getServerParams()['HTTP_AUTHORIZATION'] ?? '') ?:
-            ($req->getServerParams()['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
-
-        if (preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-            return trim($matches[1]);
-        }
-
-        return trim($authHeader);
-    }
-
-    /**
-     * Respuesta de error unificada
-     */
-    private function respuestaError(Response $res, Exception $ex): Response
-    {
-        $status = $this->codigosError[$ex->getCode()] ?? $this->codigosError['default'];
-        $res->getBody()->write(json_encode(['error' => $ex->getMessage()], JSON_UNESCAPED_UNICODE));
-        return $res->withStatus($status)->withHeader('Content-Type', 'application/json');
+        return '';
     }
 }

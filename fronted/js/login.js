@@ -1,90 +1,99 @@
-/* =======================
-   Lógica de inicio de sesión
-   ======================= */
-document.addEventListener("DOMContentLoaded", () => {
-    // Si ya hay sesión activa, redirigir al panel correspondiente
-    if (sesionActiva()) {
-        const rol = getUserRole();
-        if (rol === "gestor") {
-            window.location.href = "front/gestor-dashboard.html";
-        } else if (rol === "admin") {
-            window.location.href = "front/admin-dashboard.html";
-        }
+// =======================
+// Login – Proyecto Gestor
+// =======================
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Si existe sesión previa → redirigir
+    if (isAuthenticated()) {
+        redirectBasedOnRole();
         return;
     }
 
-    const formLogin = document.getElementById("loginForm");
-    const inputCorreo = document.getElementById("email");
-    const inputClave = document.getElementById("password");
-    const btnAcceder = document.getElementById("submitBtn");
-    const divMensaje = document.getElementById("message");
+    const UI = {
+        loginForm: document.getElementById('loginForm'),
+        email: document.getElementById('email'),
+        password: document.getElementById('password'),
+        submit: document.getElementById('submitBtn'),
+        message: document.getElementById('message'),
+    };
 
-    formLogin.addEventListener("submit", async (e) => {
+    UI.loginForm.addEventListener('submit', onSubmitLogin);
+
+    // =====================================
+    // EVENTO PRINCIPAL: user hace login
+    // =====================================
+    async function onSubmitLogin(e) {
         e.preventDefault();
-        limpiarMensaje();
+        resetMessage();
 
-        const correo = inputCorreo.value.trim();
-        const clave = inputClave.value.trim();
+        const email = UI.email.value.trim();
+        const password = UI.password.value.trim();
 
         // Validaciones básicas
-        if (!correo || !clave) {
-            mostrarMensaje("Todos los campos son obligatorios", "error");
-            return;
-        }
+        if (!email || !password)
+            return showMessage('Por favor completa todos los campos', 'error');
 
-        if (!validarCorreo(correo)) {
-            mostrarMensaje("Formato de correo inválido", "error");
-            return;
-        }
+        if (!validateEmail(email))
+            return showMessage('Por favor ingresa un email válido', 'error');
 
-        setCargando(true);
+        setLoading(true);
 
         try {
-            // Consumir API de login
-            const respuesta = await iniciarSesion(correo, clave);
+            const result = await login(email, password);
 
-            if (respuesta.token) saveToken(respuesta.token);
-            if (respuesta.user) saveUserInfo(respuesta.user);
+            if (result.token) saveToken(result.token);
+            if (result.user) saveUserInfo(result.user);
 
-            mostrarMensaje("Acceso correcto. Redirigiendo...", "success");
+            showMessage('Inicio de sesión exitoso 👍', 'success');
 
-            setTimeout(() => {
-                const rol = getUserRole();
-                if (rol === "gestor") {
-                    window.location.href = "front/gestor-dashboard.html";
-                } else if (rol === "admin") {
-                    window.location.href = "front/admin-dashboard.html";
-                } else {
-                    mostrarMensaje("Rol no reconocido", "error");
-                    setCargando(false);
-                }
-            }, 1200);
+            setTimeout(() => redirectBasedOnRole(), 800);
+
         } catch (err) {
-            console.error("Error en inicio de sesión:", err);
-            mostrarMensaje(err.message || "Credenciales inválidas", "error");
-            setCargando(false);
+            console.error('Login error:', err);
+            showMessage(err.message || 'Credenciales incorrectas', 'error');
+            setLoading(false);
         }
-    });
-
-    /* =======================
-       Funciones auxiliares
-       ======================= */
-    function mostrarMensaje(texto, tipo) {
-        divMensaje.textContent = texto;
-        divMensaje.className = `auth-message ${tipo} show`;
     }
 
-    function limpiarMensaje() {
-        divMensaje.className = "auth-message";
-        divMensaje.textContent = "";
+    // ===========================
+    // Redirección según el rol
+    // ===========================
+    function redirectBasedOnRole() {
+        const role = getUserRole();
+
+        switch (role) {
+            case 'gestor':
+                window.location.href = 'front/gestor-dashboard.html';
+                break;
+            case 'admin':
+                window.location.href = 'front/admin-dashboard.html';
+                break;
+            default:
+                showMessage('Rol no permitido', 'error');
+                break;
+        }
     }
 
-    function setCargando(estado) {
-        btnAcceder.disabled = estado;
-        btnAcceder.classList.toggle("btn-loading", estado);
+    // ===========================
+    // Helpers UI
+    // ===========================
+    function showMessage(text, type) {
+        UI.message.textContent = text;
+        UI.message.className = `auth-message ${type} show`;
     }
 
-    function validarCorreo(correo) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+    function resetMessage() {
+        UI.message.className = 'auth-message';
+        UI.message.textContent = '';
+    }
+
+    function setLoading(active) {
+        UI.submit.disabled = active;
+        UI.submit.classList.toggle('btn-loading', active);
+    }
+
+    function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 });

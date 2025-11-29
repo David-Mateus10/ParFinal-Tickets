@@ -2,85 +2,68 @@
 
 namespace App\Repositories;
 
-use App\Models\tickets;
+use App\Models\Tickets;
 
 class DataRepository
 {
-    // ======== MÉTODOS PRINCIPALES ========
-
-    /**
-     * Registrar un nuevo ticket
-     */
-    public function registrar(array $data): tickets
+    
+    /////////Crear un nuevo ticket
+    public function createTicket($data)
     {
-        return tickets::create($data);
+        return Tickets::create($data);
     }
 
-    /**
-     * Obtener todos los tickets creados por un gestor
-     */
-    public function porGestor(int $gestorId)
+    /////////Obtener tickets de un gestor específico
+    public function getTicketsByGestor($gestorId)
     {
-        return tickets::where('gestor_id', $gestorId)
-            ->with(['creadoPor', 'asignadoA']) // nombres refactorizados en el modelo
-            ->latest()
+        return Tickets::where('gestor_id', $gestorId)
+            ->with(['gestor', 'admin'])
+            ->orderBy('created_at', 'desc')
             ->get();
     }
 
-    /**
-     * Listar todos los tickets existentes
-     */
-    public function todos()
+    /////////Obtener todos los tickets
+    public function getAllTickets()
     {
-        return tickets::with(['creadoPor', 'asignadoA'])
-            ->latest()
+        return Tickets::with(['gestor', 'admin'])
+            ->orderBy('created_at', 'desc')
             ->get();
     }
-
-    /**
-     * Buscar un ticket por su ID con relaciones
-     */
-    public function buscarPorId(int $id)
+    
+    /////////Obtener un ticket por ID con relaciones
+    public function getTicketById($id)
     {
-        return tickets::with(['creadoPor', 'asignadoA', 'historial.generadoPor'])
+        return Tickets::with(['gestor', 'admin', 'actividades.usuario'])
             ->find($id);
     }
 
-    /**
-     * Cambiar el estado de un ticket
-     */
-    public function cambiarEstado(int $id, string $estado): int
+    /////////Actualizar el estado de un ticket
+    public function updateTicketStatus($id, $estado)
     {
-        return tickets::where('id', $id)->update(['estado' => $estado]);
+        return Tickets::where('id', $id)->update(['estado' => $estado]);
     }
 
-    /**
-     * Asignar un ticket a un administrador
-     */
-    public function asignarAdmin(int $id, int $adminId): int
+    /////////Asignar un ticket a un admin
+    public function assignTicket($id, $adminId)
     {
-        return tickets::where('id', $id)->update(['admin_id' => $adminId]);
+        return Tickets::where('id', $id)->update(['admin_id' => $adminId]);
     }
 
-    /**
-     * Filtrar tickets según parámetros
-     */
-    public function filtrar(array $filters)
+    /////////Buscar tickets con filtros
+    public function searchTickets($filters)
     {
-        $query = tickets::with(['creadoPor', 'asignadoA']);
+        $query = Tickets::with(['gestor', 'admin']);
 
-        if (!empty($filters['estado'])) {
+        if (isset($filters['estado'])) {
             $query->where('estado', $filters['estado']);
         }
-
-        if (!empty($filters['gestor_id'])) {
+        if (isset($filters['gestor_id'])) {
             $query->where('gestor_id', $filters['gestor_id']);
         }
-
-        if (!empty($filters['admin_id'])) {
+        if (isset($filters['admin_id'])) {
             $query->where('admin_id', $filters['admin_id']);
         }
 
-        return $query->latest()->get();
+        return $query->orderBy('created_at', 'desc')->get();
     }
 }

@@ -1,55 +1,291 @@
-/* admin.css */
-body {
-  background-color: #eef2f7;
-  font-family: 'Roboto', sans-serif;
+/* ================================
+   PANEL DE ADMINISTRACIÓN
+   ================================ */
+.admin-encabezado {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
 }
 
-.admin-panel {
-  padding: 40px;
-  background: #fff;
-  border-radius: 10px;
-  margin: 30px auto;
-  max-width: 900px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.encabezado-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.admin-title {
-  font-size: 28px;
-  color: #222;
-  margin-bottom: 20px;
+.encabezado-izquierda {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.user-table {
+.icono-logo {
+  font-size: 2rem;
+}
+
+.titulo-app {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.encabezado-derecha {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.usuario-datos {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icono-usuario {
+  font-size: 1.5rem;
+}
+
+.nombre-usuario {
+  font-weight: 500;
+}
+
+.etiqueta-rol {
+  background: #ef4444;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ================================
+   NAVEGACIÓN
+   ================================ */
+.admin-navegacion {
+  display: flex;
+  gap: 0.5rem;
+  margin: 2rem 0;
+  border-bottom: 2px solid var(--color-borde);
+}
+
+.nav-opcion {
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-texto-secundario);
+  transition: all 0.2s;
+}
+
+.nav-opcion:hover {
+  color: var(--color-primario);
+}
+
+.nav-opcion.activa {
+  color: var(--color-primario);
+  border-bottom-color: var(--color-primario);
+}
+
+/* ================================
+   SECCIONES
+   ================================ */
+.admin-seccion {
+  display: none;
+}
+
+.admin-seccion.visible {
+  display: block;
+}
+
+.seccion-encabezado {
+  margin-bottom: 2rem;
+}
+
+.seccion-encabezado h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--color-texto);
+}
+
+.texto-secundario {
+  color: var(--color-texto-secundario);
+}
+
+/* ================================
+FORMULARIO DE FILTROS
+================================ */
+.formulario-filtro {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  margin-bottom: 2rem;
+}
+
+.grid-filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.campo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.campo-formulario label {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.campo-formulario input,
+.campo-formulario select {
+  padding: 0.75rem;
+  border: 2px solid var(--color-borde);
+  border-radius: var(--radio);
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.campo-formulario input:focus,
+.campo-formulario select:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+.acciones-filtro {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ================================
+TABLAS
+================================ */
+.tabla-responsive {
+  background: white;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+}
+
+.tabla {
   width: 100%;
   border-collapse: collapse;
 }
 
-.user-table th,
-.user-table td {
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
+.tabla thead {
+  background: var(--color-fondo);
 }
 
-.user-table th {
-  background-color: #007bff;
+.tabla th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-texto-secundario);
+}
+
+.tabla td {
+  padding: 1rem;
+  border-top: 1px solid var(--color-borde);
+}
+
+.tabla tbody tr:hover {
+  background: var(--color-fondo);
+}
+
+/* ================================
+BADGES
+================================ */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-primary {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.badge-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* ================================
+BOTONES PEQUEÑOS
+================================ */
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-danger {
+  background: #ef4444;
   color: white;
 }
 
-.action-button {
-  padding: 6px 12px;
-  margin-right: 5px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.btn-danger:hover {
+  background: #dc2626;
 }
 
-.edit-button {
-  background-color: #ffc107;
-  color: #000;
+/* ================================
+FORMULARIO DE REGISTRO
+================================ */
+.formulario-registro {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  max-width: 600px;
 }
 
-.delete-button {
-  background-color: #dc3545;
-  color: #fff;
+/* ================================
+RESPONSIVE
+================================ */
+@media (max-width: 768px) {
+  .encabezado-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
+.grid-filtros {
+    grid-template-columns: 1fr;
+}
+
+.tabla-responsive {
+    overflow-x: auto;
+}
+
+.tabla {
+    min-width: 600px;
+}     

@@ -1,92 +1,94 @@
-/* =======================
-   Módulo de autenticación
-   ======================= */
+/////Autenticación y gestión de tokens
 
-// Guardar token
-function guardarToken(token) {
-    localStorage.setItem("token_sesion", token);
+///////Guardar token en localStorage
+function saveToken(token) {
+    localStorage.setItem('auth_token', token);
 }
 
-// Obtener token
-function obtenerToken() {
-    return localStorage.getItem("token_sesion");
+/////////Obtener token almacenado
+function getToken() {
+    return localStorage.getItem('auth_token');
 }
 
-// Eliminar token y datos de usuario
-function limpiarSesion() {
-    localStorage.removeItem("token_sesion");
-    localStorage.removeItem("rol_usuario");
-    localStorage.removeItem("nombre_usuario");
-    localStorage.removeItem("id_usuario");
+////////Eliminar token 
+function removeToken() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_role');
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('user_id');
 }
 
-// Guardar datos del usuario
-function guardarUsuario(usuario) {
-    if (usuario.role) localStorage.setItem("rol_usuario", usuario.role);
-    if (usuario.name) localStorage.setItem("nombre_usuario", usuario.name);
-    if (usuario.id) localStorage.setItem("id_usuario", usuario.id);
+/////////Guardar información del usuario después del login
+function saveUserInfo(user) {
+    if (user.role) localStorage.setItem('user_role', user.role);
+    if (user.name) localStorage.setItem('user_name', user.name);
+    if (user.id) localStorage.setItem('user_id', user.id);
 }
 
-// Obtener rol
-function rolUsuario() {
-    return localStorage.getItem("rol_usuario");
+/////////Obtener rol del usuario
+function getUserRole() {
+    return localStorage.getItem('user_role');
 }
 
-// Obtener nombre
-function nombreUsuario() {
-    return localStorage.getItem("nombre_usuario");
+/////////Obtener nombre del usuario 
+function getUserName() {
+    return localStorage.getItem('user_name');
 }
 
-// Obtener ID
-function idUsuario() {
-    return localStorage.getItem("id_usuario");
+//////////Obtener ID del usuario
+function getUserId() {
+    return localStorage.getItem('user_id');
 }
 
-// Verificar si hay sesión activa
-function sesionActiva() {
-    return obtenerToken() !== null;
+ //////////Verificar si hay sesión activa
+function isAuthenticated() {
+    return getToken() !== null;
 }
 
-// Verificar autenticación y redirigir
-function verificarSesion() {
-    if (!sesionActiva()) {
-        window.location.href = "../index.html";
+//////////Verificar autenticación y redirigir si no está autenticado
+function checkAuth() {
+    if (!isAuthenticated()) {
+        window.location.href = '../index.html';
         return false;
     }
     return true;
 }
 
-// Verificar rol y redirigir si no coincide
-function verificarRol(rolRequerido) {
-    const rol = rolUsuario();
-    if (rol !== rolRequerido) {
-        alert("Acceso denegado");
-        if (rol === "gestor") {
-            window.location.href = "gestor-dashboard.html";
-        } else if (rol === "admin") {
-            window.location.href = "admin-dashboard.html";
+///////////Verificar rol y redirigir si no coincide
+function checkRole(requiredRole) {
+    const userRole = getUserRole();
+    if (userRole !== requiredRole) {
+        alert('No tienes permisos para acceder a esta página');
+        if (userRole === 'gestor') {
+            window.location.href = 'gestor-dashboard.html';
+        } else if (userRole === 'admin') {
+            window.location.href = 'admin-dashboard.html';
         } else {
-            window.location.href = "../index.html";
+            window.location.href = '../index.html';
         }
         return false;
     }
     return true;
 }
 
-// Cerrar sesión
-async function cerrarSesion() {
+///////////Cerrar sesión
+async function logout() {
     try {
-        await fetch(`${API_CONFIG.USERS_API}/logout`, {
-            method: "POST",
+        const response = await fetch(`${API_CONFIG.USERS_API}/logout`, {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": obtenerToken()
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
             }
         });
-    } catch (err) {
-        console.error("Error al cerrar sesión:", err);
-    } finally {
-        limpiarSesion();
-        window.location.href = "../index.html";
+
+        removeToken();
+        window.location.href = '../index.html';
+
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+
+        removeToken();
+        window.location.href = '../index.html';
     }
 }

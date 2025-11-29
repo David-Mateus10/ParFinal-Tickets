@@ -1,93 +1,109 @@
-/* =======================
-   Lógica de registro de usuario
-   ======================= */
-document.addEventListener("DOMContentLoaded", () => {
-    // Si ya hay sesión activa, redirigir al panel correspondiente
-    if (sesionActiva()) {
-        const rol = rolUsuario();
-        if (rol === "gestor") {
-            window.location.href = "gestor-dashboard.html";
-        } else if (rol === "admin") {
-            window.location.href = "admin-dashboard.html";
-        }
+// ===========================
+// Registro – Proyecto Gestor
+// ===========================
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Si hay sesión activa → redirigir
+    if (isAuthenticated()) {
+        redirectByRole();
         return;
     }
 
-    const formRegistro = document.getElementById("registerForm");
-    const inputNombre = document.getElementById("name");
-    const inputCorreo = document.getElementById("email");
-    const inputClave = document.getElementById("password");
-    const selectRol = document.getElementById("role");
-    const btnRegistrar = document.getElementById("submitBtn");
-    const divMensaje = document.getElementById("message");
+    const UI = {
+        form: document.getElementById('registerForm'),
+        name: document.getElementById('name'),
+        email: document.getElementById('email'),
+        password: document.getElementById('password'),
+        role: document.getElementById('role'),
+        submit: document.getElementById('submitBtn'),
+        message: document.getElementById('message'),
+    };
 
-    formRegistro.addEventListener("submit", async (e) => {
+    UI.form.addEventListener('submit', onRegisterSubmit);
+
+    // =================================================
+    // Evento principal: procesar registro de usuario
+    // =================================================
+    async function onRegisterSubmit(e) {
         e.preventDefault();
-        limpiarMensaje();
+        resetMessage();
 
-        const nombre = inputNombre.value.trim();
-        const correo = inputCorreo.value.trim();
-        const clave = inputClave.value.trim();
-        const rol = selectRol.value;
+        const userData = {
+            name: UI.name.value.trim(),
+            email: UI.email.value.trim(),
+            password: UI.password.value.trim(),
+            role: UI.role.value
+        };
 
         // Validaciones
-        if (!nombre || !correo || !clave || !rol) {
-            mostrarMensaje("Todos los campos son obligatorios", "error");
-            return;
-        }
+        if (!validateNotEmpty(userData))
+            return showMessage('Por favor completa todos los campos', 'error');
 
-        if (!validarCorreo(correo)) {
-            mostrarMensaje("Correo inválido", "error");
-            return;
-        }
+        if (!validateEmail(userData.email))
+            return showMessage('Por favor ingresa un email válido', 'error');
 
-        if (clave.length < 6) {
-            mostrarMensaje("La contraseña debe tener mínimo 6 caracteres", "error");
-            return;
-        }
+        if (userData.password.length < 6)
+            return showMessage('La contraseña debe tener al menos 6 caracteres', 'error');
 
-        if (!["gestor", "admin"].includes(rol)) {
-            mostrarMensaje("Selecciona un rol válido", "error");
-            return;
-        }
+        if (!['admin', 'gestor'].includes(userData.role))
+            return showMessage('Por favor selecciona un rol válido', 'error');
 
-        setCargando(true);
+        setLoading(true);
 
         try {
-            const datos = { name: nombre, email: correo, password: clave, role: rol };
-            await registrarUsuario(datos);
+            await register(userData);
 
-            mostrarMensaje("Registro exitoso. Redirigiendo al inicio...", "success");
+            showMessage('Registro exitoso 😎 Redirigiendo...', 'success');
 
             setTimeout(() => {
-                window.location.href = "../index.html";
-            }, 1500);
+                window.location.href = '../index.html';
+            }, 1200);
+
         } catch (err) {
-            console.error("Error en registro:", err);
-            mostrarMensaje(err.message || "No se pudo registrar el usuario", "error");
-            setCargando(false);
+            console.error('Error en registro:', err);
+            showMessage(err.message || 'Error al registrar usuario.', 'error');
+            setLoading(false);
         }
-    });
-
-    /* =======================
-       Funciones auxiliares
-       ======================= */
-    function mostrarMensaje(texto, tipo) {
-        divMensaje.textContent = texto;
-        divMensaje.className = `auth-message ${tipo} show`;
     }
 
-    function limpiarMensaje() {
-        divMensaje.className = "auth-message";
-        divMensaje.textContent = "";
+    // =====================================
+    // Redirección según rol si ya está logueado
+    // =====================================
+    function redirectByRole() {
+        const role = getUserRole();
+        if (role === 'gestor')
+            window.location.href = 'gestor-dashboard.html';
+        else if (role === 'admin')
+            window.location.href = 'admin-dashboard.html';
     }
 
-    function setCargando(estado) {
-        btnRegistrar.disabled = estado;
-        btnRegistrar.classList.toggle("btn-loading", estado);
+    // ===========================
+    // Helpers UI
+    // ===========================
+    function showMessage(text, type) {
+        UI.message.textContent = text;
+        UI.message.className = `auth-message ${type} show`;
     }
 
-    function validarCorreo(correo) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+    function resetMessage() {
+        UI.message.className = 'auth-message';
+        UI.message.textContent = '';
+    }
+
+    function setLoading(active) {
+        UI.submit.disabled = active;
+        UI.submit.classList.toggle('btn-loading', active);
+    }
+
+    // ===========================
+    // Helpers de validación
+    // ===========================
+    function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validateNotEmpty(obj) {
+        return Object.values(obj).every(value => value !== '');
     }
 });

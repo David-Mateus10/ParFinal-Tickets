@@ -1,43 +1,187 @@
-/* auth.css */
-body {
-  background: #f4f6f8;
-  font-family: 'Segoe UI', sans-serif;
-}
-
+/* ================================
+   PÁGINA DE AUTENTICACIÓN
+   ================================ */
 .auth-container {
-  max-width: 400px;
-  margin: 60px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.auth-title {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #333;
-  text-align: center;
+.auth-card,
+.registro-box {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    padding: 2.5rem;
 }
 
-.auth-input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.auth-header,
+.registro-header {
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-.auth-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.auth-logo,
+.registro-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
 }
 
-.auth-button:hover {
-  background-color: #0056b3;
+.auth-title,
+.registro-titulo {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-texto);
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle,
+.registro-subtitulo {
+    color: var(--color-texto-secundario);
+    font-size: 0.95rem;
+}
+
+/* ================================
+   FORMULARIOS
+   ================================ */
+.auth-form,
+.registro-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-group,
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label,
+.etiqueta {
+    font-weight: 500;
+    color: var(--color-texto);
+    font-size: 0.9rem;
+}
+
+.input-group,
+.grupo-input {
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--color-borde);
+    border-radius: var(--radio);
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.input-group:focus-within,
+.grupo-input:focus-within {
+    border-color: var(--color-primario);
+}
+
+.input-icon,
+.icono-input {
+    padding: 0 0.75rem;
+    font-size: 1.25rem;
+    background: var(--color-fondo);
+    display: flex;
+    align-items: center;
+}
+
+.form-control,
+.input-texto,
+.campo-texto {
+    flex: 1;
+    border: none;
+    padding: 0.75rem;
+    font-size: 1rem;
+    outline: none;
+    font-family: inherit;
+}
+
+select.input-texto,
+select.campo-texto {
+    cursor: pointer;
+}
+
+textarea.campo-texto {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.ayuda {
+    font-size: 0.85rem;
+    color: var(--color-texto-secundario);
+}
+
+/* ================================
+   FOOTER
+   ================================ */
+.auth-footer,
+.registro-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+    color: var(--color-texto-secundario);
+    font-size: 0.9rem;
+}
+
+.auth-footer a,
+.registro-footer a {
+    color: var(--color-primario);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover,
+.registro-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ================================
+   ESTADOS DE BOTÓN
+   ================================ */
+.btn-loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* ================================
+   RESPONSIVE
+   ================================ */
+@media (max-width: 640px) {
+    .auth-card,
+    .registro-box {
+        padding: 1.5rem;
+    }
+    
+    .auth-logo,
+    .registro-icon {
+        font-size: 3rem;
+    }
+    
+    .auth-title,
+    .registro-titulo {
+        font-size: 1.5rem;
+    }
 }
